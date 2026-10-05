@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feliz Aniversario</title>
+    <!-- Importamos una fuente manuscrita elegante para la carta -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Montserrat', sans-serif;
+            background-color: #1a1a1a;
+        }
+
+        /* FONDO: COLLAGE DE FOTOS CON OVERLAY SUAVE */
+        .fondo-collage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('collage.jpg'); 
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.65); /* Oscurece un poco la foto para que el texto resalte */
+            z-index: 1;
+        }
+
+        /* CANVAS DE CORAZONES FLOTANTES */
+        #canvas-corazones {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none; /* Permite hacer clic a través del canvas */
+        }
+
+        /* TEXTO PRINCIPAL DEL CENTRO */
+        .titulo-centro {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            text-align: center;
+            color: #ffffff;
+            width: 90%;
+            pointer-events: none;
+        }
+
+        .titulo-centro h1 {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(3.5rem, 8vw, 7rem); /* Responsive automático */
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(230, 57, 70, 0.8), 2px 2px 10px rgba(0,0,0,0.7);
+            line-height: 1.1;
+        }
+
+        .titulo-centro p {
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 10px;
+            color: #ffe6e6;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.8);
+        }
+
+        /* BOTÓN FLOTANTE CARTA EN LA ESQUINA */
+        .icono-carta {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 4;
+            background: rgba(255, 255, 255, 0.9);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, background 0.3s ease;
+            animation: latido 2s infinite;
+        }
+
+        .icono-carta:hover {
+            transform: scale(1.15) rotate(5deg);
+            background: #ffffff;
+        }
+
+        .icono-carta svg {
+            width: 30px;
+            height: 30px;
+            fill: #e63946;
+        }
+
+        /* VENTANA MODAL (CARTA FLOTANTE) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .modal-overlay.activo {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .carta-contenedor {
+            background: #fffdfa; /* Tono papel vintage suave */
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow-y: auto;
+            transform: translateY(30px);
+            transition: transform 0.4s ease;
+            border: 2px solid #f3e5dc;
+        }
+
+        .modal-overlay.activo .carta-contenedor {
+            transform: translateY(0);
+        }
+
+        .boton-cerrar {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            color: #888;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .boton-cerrar:hover {
+            color: #e63946;
+        }
+
+        .contenido-carta h2 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.5rem;
+            color: #e63946;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .contenido-carta p {
+            font-family: 'Georgia', serif;
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: #4a4a4a;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .firma {
+            text-align: right !important;
+            font-style: italic;
+            margin-top: 30px;
+            font-weight: bold;
+            color: #e63946 !important;
+        }
+
+        /* ANIMACIÓN LATIDO PARA EL SOBRE */
+        @keyframes latido {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
+        /* ADAPTABILIDAD PARA MÓVILES */
+        @media (max-width: 600px) {
+            .icono-carta {
+                top: 15px;
+                right: 15px;
+                width: 50px;
+                height: 50px;
+            }
+            .icono-carta svg {
+                width: 24px;
+                height: 24px;
+            }
+            .carta-contenedor {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- FONDO Y CANVAS -->
+    <div class="fondo-collage"></div>
+    <canvas id="canvas-corazones"></canvas>
+
+    <!-- TÍTULO CENTRAL -->
+    <div class="titulo-centro">
+        <h1>Feliz Aniversario</h1>
+        <p>2 Años Juntos</p>
+    </div>
+
+    <!-- BOTÓN SOBRE CARTA -->
+    <div class="icono-carta" id="btnCarta" title="Abrir mi carta para ti">
+        <svg viewBox="0 0 24 24">
+            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+        </svg>
+    </div>
+
+    <!-- MODAL / CARTA FLOTANTE -->
+    <div class="modal-overlay" id="modalCarta">
+        <div class="carta-contenedor">
+            <span class="boton-cerrar" id="btnCerrar">&times;</span>
+            <div class="contenido-carta">
+                <h2>Mi Amor Hermosa,</h2>
+                <p>
+                    Verdaderamente no me creo hayan ya pasado dos años desde que comenzamos esta hermosa aventura juntos. Cada día a tu lado ha sido un regalo, y no hay palabras suficientes para expresar lo agradecido que estoy por tenerte en mi vida.
+                </p>
+                <p>
+                    Gracias por todos los momentos compartidos a tu lado, sinceramente no hay palabras capaces de describir todo lo que siento por ti, lo que me haces sentir y lo feliz que me haces.
+                </p>
+                <p>
+                    Sé que la distancia nos está siendo un reto aún, no obstante confío en que ya llegará el día en el que podamos estar juntos sin que nada nos separe, y mientras tanto, quiero que sepas que cada día que pasa te amo más y más.
+                </p>
+                <p class="firma">
+                    Con todo mi amor,<br>Siempre tuyo. <br> -Piero
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- LÓGICA DEL CANVAS DE CORAZONES ROSADOS Y SEMITRANSPARENTES ---
+        const canvas = document.getElementById('canvas-corazones');
+        const ctx = canvas.getContext('2d');
+
+        function redimensionarCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        redimensionarCanvas();
+        window.addEventListener('resize', redimensionarCanvas);
+
+        // Clase para los corazones flotantes
+        class Corazon {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 100;
+                this.tamano = 10 + Math.random() * 20;
+                this.velocidadY = 0.5 + Math.random() * 1.5;
+                this.velocidadX = (Math.random() - 0.5) * 0.5;
+                // Opacidad semitransparente (0.2 a 0.5) y tono rosa suave
+                this.opacidad = 0.2 + Math.random() * 0.3;
+                this.color = `rgba(255, 182, 193, ${this.opacidad})`;
+            }
+
+            dibujar() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.beginPath();
+                ctx.fillStyle = this.color;
+                
+                // Forma de corazón redondeado ("gordito")
+                const t = this.tamano;
+                ctx.moveTo(0, -t * 0.35);
+                ctx.bezierCurveTo(t * 0.75, -t * 1.05, t * 1.45, -t * 0.25, 0, t * 0.85);
+                ctx.bezierCurveTo(-t * 1.45, -t * 0.25, -t * 0.75, -t * 1.05, 0, -t * 0.35);
+                
+                ctx.fill();
+                ctx.restore();
+            }
+
+            actualizar() {
+                this.y -= this.velocidadY;
+                this.x += this.velocidadX;
+
+                // Reiniciar si se salen por arriba
+                if (this.y < -50) {
+                    this.reset();
+                }
+            }
+        }
+
+        // Crear array de corazones
+        const listaCorazones = [];
+        const cantidadCorazones = 35; // Ajusta este número según prefieras más o menos densidad
+        for (let i = 0; i < cantidadCorazones; i++) {
+            listaCorazones.push(new Corazon());
+        }
+
+        // Bucle de animación continuo
+        function animar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            listaCorazones.forEach(corazon => {
+                corazon.actualizar();
+                corazon.dibujar();
+            });
+            requestAnimationFrame(animar);
+        }
+        animar();
+
+        // --- LÓGICA DEL MODAL CARTA ---
+        const btnCarta = document.getElementById('btnCarta');
+        const modalCarta = document.getElementById('modalCarta');
+        const btnCerrar = document.getElementById('btnCerrar');
+
+        btnCarta.addEventListener('click', () => {
+            modalCarta.classList.add('activo');
+        });
+
+        btnCerrar.addEventListener('click', () => {
+            modalCarta.classList.remove('activo');
+        });
+
+        // Cerrar al hacer clic fuera del cuadro de la carta
+        modalCarta.addEventListener('click', (e) => {
+            if (e.target === modalCarta) {
+                modalCarta.classList.remove('activo');
+            }
+        });
+    </script>
+</body>
+</html>
